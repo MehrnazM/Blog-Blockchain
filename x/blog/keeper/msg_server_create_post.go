@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"blog/x/blog/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -11,7 +12,13 @@ func (k msgServer) CreatePost(goCtx context.Context, msg *types.MsgCreatePost) (
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// TODO: Handling the message
-	_ = ctx
+	post := types.Post{
+		Creator: msg.Creator,
+		Title:   msg.Title,
+		Body:    msg.Body,
+	}
 
-	return &types.MsgCreatePostResponse{}, nil
+	id := k.AppendPost(ctx, post)
+
+	return &types.MsgCreatePostResponse{Id: id}, nil
 }
