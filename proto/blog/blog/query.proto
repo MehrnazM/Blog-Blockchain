@@ -77,11 +77,17 @@ message QueryAllCommentResponse {
 
 message QueryCommentsRequest {
   uint64 id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message QueryCommentsResponse {
-  string title = 1;
-  string body = 2;
+	Post Post = 1;
+
+	// Returning a list of comments
+	repeated Comment Comment = 2;
+  
+	// Adding pagination to response
+	cosmos.base.query.v1beta1.PageResponse pagination = 3;
 }
 
 // this line is used by starport scaffolding # 3
