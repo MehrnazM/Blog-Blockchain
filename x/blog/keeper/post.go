@@ -16,7 +16,7 @@ func (k Keeper) AppendPost(ctx sdk.Context, post types.Post) (count uint64) {
 	bz := make([]byte, 8)
 	binary.BigEndian.PutUint64(bz, post.Id)
 	appendedValue := k.cdc.MustMarshal(&post)
-	store.Set(byteKey, appendedValue)
+	store.Set(bz, appendedValue)
 	k.SetPostCount(ctx, count+1)
 	return count
 }
@@ -40,4 +40,19 @@ func (k Keeper) SetPostCount(ctx sdk.Context, count uint64) {
 	binary.BigEndian.PutUint64(bz, count)
 	store.Set(byteKey, bz)
 
+}
+
+func (k Keeper) GetPost(ctx sdk.Context, id uint64) (post types.Post, found bool) {
+	byteKey := []byte(types.PostKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), byteKey)
+
+	byteID := make([]byte, 8)
+	binary.BigEndian.PutUint64(byteID, id)
+
+	postByte := store.Get(byteID)
+	if postByte == nil {
+		return post, false
+	}
+	k.cdc.MustUnmarshal(postByte, &post)
+	return post, true
 }
