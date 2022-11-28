@@ -7,18 +7,12 @@ import { msgTypes } from './registry';
 import { IgniteClient } from "../client"
 import { MissingWalletError } from "../helpers"
 import { Api } from "./rest";
-import { MsgCreateComment } from "./types/blog/blog/tx";
 import { MsgCreatePost } from "./types/blog/blog/tx";
 import { MsgDeleteComment } from "./types/blog/blog/tx";
+import { MsgCreateComment } from "./types/blog/blog/tx";
 
 
-export { MsgCreateComment, MsgCreatePost, MsgDeleteComment };
-
-type sendMsgCreateCommentParams = {
-  value: MsgCreateComment,
-  fee?: StdFee,
-  memo?: string
-};
+export { MsgCreatePost, MsgDeleteComment, MsgCreateComment };
 
 type sendMsgCreatePostParams = {
   value: MsgCreatePost,
@@ -32,10 +26,12 @@ type sendMsgDeleteCommentParams = {
   memo?: string
 };
 
-
-type msgCreateCommentParams = {
+type sendMsgCreateCommentParams = {
   value: MsgCreateComment,
+  fee?: StdFee,
+  memo?: string
 };
+
 
 type msgCreatePostParams = {
   value: MsgCreatePost,
@@ -43,6 +39,10 @@ type msgCreatePostParams = {
 
 type msgDeleteCommentParams = {
   value: MsgDeleteComment,
+};
+
+type msgCreateCommentParams = {
+  value: MsgCreateComment,
 };
 
 
@@ -62,20 +62,6 @@ interface TxClientOptions {
 export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "http://localhost:26657", prefix: "cosmos" }) => {
 
   return {
-		
-		async sendMsgCreateComment({ value, fee, memo }: sendMsgCreateCommentParams): Promise<DeliverTxResponse> {
-			if (!signer) {
-					throw new Error('TxClient:sendMsgCreateComment: Unable to sign Tx. Signer is not present.')
-			}
-			try {			
-				const { address } = (await signer.getAccounts())[0]; 
-				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
-				let msg = this.msgCreateComment({ value: MsgCreateComment.fromPartial(value) })
-				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
-			} catch (e: any) {
-				throw new Error('TxClient:sendMsgCreateComment: Could not broadcast Tx: '+ e.message)
-			}
-		},
 		
 		async sendMsgCreatePost({ value, fee, memo }: sendMsgCreatePostParams): Promise<DeliverTxResponse> {
 			if (!signer) {
@@ -105,14 +91,20 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		
-		msgCreateComment({ value }: msgCreateCommentParams): EncodeObject {
-			try {
-				return { typeUrl: "/blog.blog.MsgCreateComment", value: MsgCreateComment.fromPartial( value ) }  
+		async sendMsgCreateComment({ value, fee, memo }: sendMsgCreateCommentParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgCreateComment: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
+				let msg = this.msgCreateComment({ value: MsgCreateComment.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
 			} catch (e: any) {
-				throw new Error('TxClient:MsgCreateComment: Could not create message: ' + e.message)
+				throw new Error('TxClient:sendMsgCreateComment: Could not broadcast Tx: '+ e.message)
 			}
 		},
+		
 		
 		msgCreatePost({ value }: msgCreatePostParams): EncodeObject {
 			try {
@@ -127,6 +119,14 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 				return { typeUrl: "/blog.blog.MsgDeleteComment", value: MsgDeleteComment.fromPartial( value ) }  
 			} catch (e: any) {
 				throw new Error('TxClient:MsgDeleteComment: Could not create message: ' + e.message)
+			}
+		},
+		
+		msgCreateComment({ value }: msgCreateCommentParams): EncodeObject {
+			try {
+				return { typeUrl: "/blog.blog.MsgCreateComment", value: MsgCreateComment.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgCreateComment: Could not create message: ' + e.message)
 			}
 		},
 		

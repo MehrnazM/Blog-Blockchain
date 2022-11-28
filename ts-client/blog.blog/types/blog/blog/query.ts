@@ -44,6 +44,15 @@ export interface QueryAllCommentResponse {
   pagination: PageResponse | undefined;
 }
 
+export interface QueryCommentsRequest {
+  id: number;
+}
+
+export interface QueryCommentsResponse {
+  title: string;
+  body: string;
+}
+
 function createBaseQueryParamsRequest(): QueryParamsRequest {
   return {};
 }
@@ -458,6 +467,111 @@ export const QueryAllCommentResponse = {
   },
 };
 
+function createBaseQueryCommentsRequest(): QueryCommentsRequest {
+  return { id: 0 };
+}
+
+export const QueryCommentsRequest = {
+  encode(message: QueryCommentsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== 0) {
+      writer.uint32(8).uint64(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryCommentsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryCommentsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.id = longToNumber(reader.uint64() as Long);
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCommentsRequest {
+    return { id: isSet(object.id) ? Number(object.id) : 0 };
+  },
+
+  toJSON(message: QueryCommentsRequest): unknown {
+    const obj: any = {};
+    message.id !== undefined && (obj.id = Math.round(message.id));
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryCommentsRequest>, I>>(object: I): QueryCommentsRequest {
+    const message = createBaseQueryCommentsRequest();
+    message.id = object.id ?? 0;
+    return message;
+  },
+};
+
+function createBaseQueryCommentsResponse(): QueryCommentsResponse {
+  return { title: "", body: "" };
+}
+
+export const QueryCommentsResponse = {
+  encode(message: QueryCommentsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.title !== "") {
+      writer.uint32(10).string(message.title);
+    }
+    if (message.body !== "") {
+      writer.uint32(18).string(message.body);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryCommentsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryCommentsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.title = reader.string();
+          break;
+        case 2:
+          message.body = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCommentsResponse {
+    return {
+      title: isSet(object.title) ? String(object.title) : "",
+      body: isSet(object.body) ? String(object.body) : "",
+    };
+  },
+
+  toJSON(message: QueryCommentsResponse): unknown {
+    const obj: any = {};
+    message.title !== undefined && (obj.title = message.title);
+    message.body !== undefined && (obj.body = message.body);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryCommentsResponse>, I>>(object: I): QueryCommentsResponse {
+    const message = createBaseQueryCommentsResponse();
+    message.title = object.title ?? "";
+    message.body = object.body ?? "";
+    return message;
+  },
+};
+
 /** Query defines the gRPC querier service. */
 export interface Query {
   /** Parameters queries the parameters of the module. */
@@ -468,6 +582,8 @@ export interface Query {
   Comment(request: QueryGetCommentRequest): Promise<QueryGetCommentResponse>;
   /** Queries a list of Comment items. */
   CommentAll(request: QueryAllCommentRequest): Promise<QueryAllCommentResponse>;
+  /** Queries a list of Comments items. */
+  Comments(request: QueryCommentsRequest): Promise<QueryCommentsResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -478,6 +594,7 @@ export class QueryClientImpl implements Query {
     this.Posts = this.Posts.bind(this);
     this.Comment = this.Comment.bind(this);
     this.CommentAll = this.CommentAll.bind(this);
+    this.Comments = this.Comments.bind(this);
   }
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse> {
     const data = QueryParamsRequest.encode(request).finish();
@@ -501,6 +618,12 @@ export class QueryClientImpl implements Query {
     const data = QueryAllCommentRequest.encode(request).finish();
     const promise = this.rpc.request("blog.blog.Query", "CommentAll", data);
     return promise.then((data) => QueryAllCommentResponse.decode(new _m0.Reader(data)));
+  }
+
+  Comments(request: QueryCommentsRequest): Promise<QueryCommentsResponse> {
+    const data = QueryCommentsRequest.encode(request).finish();
+    const promise = this.rpc.request("blog.blog.Query", "Comments", data);
+    return promise.then((data) => QueryCommentsResponse.decode(new _m0.Reader(data)));
   }
 }
 
